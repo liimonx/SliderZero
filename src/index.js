@@ -159,13 +159,20 @@ import {
 
         e.preventDefault()
 
+
         const x = e.pageX - this.track.offsetLeft
         const walk = x - startX
     
         this.slideIndex = slideX - walk
+
+    
+        if (this.slideIndex >= ( this.itemWidth * this.items.length  - window.innerWidth / 1.05)) {
+          this.slideIndex = (this.itemWidth * this.items.length  - window.innerWidth )
+        }
+
         
         this.track.style.transform = `translateX(-${this.slideIndex}px)`
-    
+
       })
     },
 
