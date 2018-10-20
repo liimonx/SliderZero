@@ -42,7 +42,7 @@ import {
       border       : 0,
       background   : '#ccc',
       barColor     : 'blue'
-    }, easing      : 'cubic-bezier(0, 1.09, 0.27, 1.28)',
+    }, easing      : 'cubic-bezier(0.22, 0.77, 0.01, 0.8)',
 
 
   }
@@ -114,18 +114,65 @@ import {
     _create: function () {
       this.reloadItems()
 
-      const track = C$( 'div' )
-      addClass( track, 'zero_track' )
+      this.track = C$( 'div' )
+      addClass( this.track, 'zero_track' )
 
-      this.items.forEach( item => track.appendChild( item ) )
-      this.element.appendChild( track )
+      this.items.forEach( item => this.track.appendChild( item ) )
+      this.element.appendChild( this.track )
 
       this.renderStyle()
     },
 
 
+
+    draging: function () {
+      let isDown = false
+      let startX
+      let slideX
+
+      addEvent(this.track, 'mousedown',(e)=>{
+        isDown = true
+        addClass( this.track, 'zero_active' )
+
+        let txt = this.track.style.transform
+        let numb = txt.match(/\d/g)
+        
+        if (numb != null) 
+          numb = numb.join( "" );
+          startX = e.pageX - this.track.offsetLeft
+          slideX = numb
+      })
+
+      addEvent(this.track, 'mouseleave', ()=>{
+        isDown = false
+        removeClass( this.track, 'zero_active' )
+      })
+
+      addEvent(this.track, 'mouseup', ()=>{
+        isDown = false
+        removeClass( this.track, 'zero_active' )
+      })
+
+
+      this.track.addEventListener('mousemove',(e)=>{
+        if ( !isDown ) return
+
+        e.preventDefault()
+
+        const x = e.pageX - this.track.offsetLeft
+        const walk = x - startX
+    
+        this.slideIndex = slideX - walk
+        
+        this.track.style.transform = `translateX(-${this.slideIndex}px)`
+    
+      })
+    },
+
+
     init: function() {
       this._create()
+      this.draging()
     }
 
   }
