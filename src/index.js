@@ -19,6 +19,8 @@ import {
   function SliderZero(elm, options) {
     this.element = $(elm)[0]
 
+    this.slideIndex = 0
+
     this.options = {}
 
     for (var prop in SliderZero.defaults) {
@@ -40,8 +42,9 @@ import {
     barClick       : true,
     barStyle       : {
       border       : 0,
-      background   : '#ccc',
-      barColor     : 'blue'
+      background   : '#F7E29C',
+      barColor     : '#FCBC80',
+      height       : '10'
     }, easing      : 'cubic-bezier(0.22, 0.77, 0.01, 0.8)',
 
 
@@ -104,6 +107,24 @@ import {
         display: inline-flex;
       }
 
+      .${this.element.classList[0]} .zero_bar{
+        width: 100%;
+        height: ${this.options.barStyle.height}px ;
+        background:  ${this.options.barStyle.background} ;
+        position: relative ;
+        cursor: pointer ;
+      }
+
+      .${this.element.classList[0]} .zero_bar .zero_innerBar{
+        top: 0;
+        bottom: 0;
+        left: 0;
+        background: #000;
+        position: absolute;
+        cursor: pointer;
+        transition: right 1s ${this.options.easing} ;
+      }
+
       `
 
       head.appendChild( style )
@@ -117,12 +138,26 @@ import {
       this.track = C$( 'div' )
       addClass( this.track, 'zero_track' )
 
+      this.bar = C$( 'div' )
+      addClass( this.bar, 'zero_bar' )
+
+      this.innerBar = C$( 'span' )
+      addClass(this.innerBar, 'zero_innerBar')
+
       this.items.forEach( item => this.track.appendChild( item ) )
       this.element.appendChild( this.track )
+
+      this.bar.appendChild(this.innerBar)
+      if (this.options.controlBar == !0) this.element.appendChild(this.bar)
 
       this.renderStyle()
     },
 
+
+    _barControl: function () {
+
+      
+    },
 
 
     draging: function () {
@@ -146,11 +181,22 @@ import {
       addEvent(this.track, 'mouseleave', ()=>{
         isDown = false
         removeClass( this.track, 'zero_active' )
+
+        if (this.slideIndex >= ( this.itemWidth * this.items.length  - window.innerWidth)) {
+          this.slideIndex = (this.itemWidth * this.items.length  - window.innerWidth )
+          this.track.style.transform = `translateX(-${this.slideIndex}px)`
+        }
       })
 
       addEvent(this.track, 'mouseup', ()=>{
         isDown = false
         removeClass( this.track, 'zero_active' )
+        
+        if (this.slideIndex >= ( this.itemWidth * this.items.length  - window.innerWidth)) {
+          this.slideIndex = (this.itemWidth * this.items.length  - window.innerWidth )
+          this.track.style.transform = `translateX(-${this.slideIndex}px)`
+        }
+        
       })
 
 
@@ -165,14 +211,7 @@ import {
     
         this.slideIndex = slideX - walk
 
-    
-        if (this.slideIndex >= ( this.itemWidth * this.items.length  - window.innerWidth / 1.05)) {
-          this.slideIndex = (this.itemWidth * this.items.length  - window.innerWidth )
-        }
-
-        
         this.track.style.transform = `translateX(-${this.slideIndex}px)`
-
       })
     },
 
@@ -180,6 +219,7 @@ import {
     init: function() {
       this._create()
       this.draging()
+      this._barControl()
     }
 
   }
