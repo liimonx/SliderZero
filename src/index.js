@@ -20,6 +20,7 @@ import {
     this.element = $(elm)[0]
 
     this.slideIndex = 0
+    this.barIndex = 0
 
     this.options = {}
 
@@ -41,7 +42,7 @@ import {
     controlBar     : true,
     barClick       : true,
     barStyle       : {
-      border       : 0,
+      borderRadius : 5,
       background   : '#F7E29C',
       barColor     : '#FCBC80',
       height       : '10'
@@ -93,7 +94,6 @@ import {
         width: ${this.items.length * this.itemWidth}px; 
         white-space: nowrap;
         user-select: none;
-        cursor: pointer;
         transition: transform 1s ${this.options.easing};
         will-change: transform;
         position: relative;
@@ -113,16 +113,19 @@ import {
         background:  ${this.options.barStyle.background} ;
         position: relative ;
         cursor: pointer ;
+        border-radius: ${this.options.barStyle.borderRadius}px ;
       }
 
       .${this.element.classList[0]} .zero_bar .zero_innerBar{
         top: 0;
         bottom: 0;
         left: 0;
-        background: #000;
+        background: ${this.options.barStyle.barColor} ;
         position: absolute;
         cursor: pointer;
-        transition: right 1s ${this.options.easing} ;
+        transition: width 1s ${this.options.easing} ;
+        border-radius: ${this.options.barStyle.borderRadius}px ;
+
       }
 
       `
@@ -154,13 +157,14 @@ import {
     },
 
 
-    _barControl: function () {
-
-      
+    _barStyleUpdate: function () {
+      css( this.innerBar , {
+        width: `${this.barIndex}px`
+      })
     },
 
 
-    draging: function () {
+    _draging: function () {
       let isDown = false
       let startX
       let slideX
@@ -205,21 +209,32 @@ import {
 
         e.preventDefault()
 
-
         const x = e.pageX - this.track.offsetLeft
         const walk = x - startX
     
         this.slideIndex = slideX - walk
+        
+        this.barIndex = this.slideIndex  / (((this.items.length * this.itemWidth) -  this.element.offsetWidth ) / this.element.offsetWidth)
 
         this.track.style.transform = `translateX(-${this.slideIndex}px)`
+        
+        this._barStyleUpdate()
+
+      })
+    },
+
+    slider: function () {
+      addEvent(this.bar , 'click',(e)=>{
+        this.barIndex = e.screenX
+        this._barStyleUpdate()
       })
     },
 
 
     init: function() {
       this._create()
-      this.draging()
-      this._barControl()
+      this._draging()
+      this.slider()
     }
 
   }
