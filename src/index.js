@@ -163,49 +163,49 @@ import {
       })
     },
 
-
-    _trackStyleUpdate: function (params) {
-      this.track.style.transform = `translateX(-${this.slideIndex}px)`
+    
+    updateSlidex: function () {
+      this.slideX 
+      let txt = this.track.style.transform
+      let numb = txt.match(/\d/g)
+      
+      if (numb != null) 
+        numb = numb.join( "" );
+        this.slideX  = numb
     },
     
+    
+    _trackStyleUpdate: function (changeIndex) {
+      if (changeIndex == !0 && this.slideIndex >= ( this.itemWidth * this.items.length  - window.innerWidth)) {
+        this.slideIndex = (this.itemWidth * this.items.length  - window.innerWidth )
+      }
+      this.track.style.transform = `translateX(-${this.slideIndex}px)`
+    },
+
 
     _draging: function () {
       let isDown = false
       let startX
-      let slideX
 
       addEvent(this.track, 'mousedown',(e)=>{
         isDown = true
         addClass( this.track, 'zero_active' )
+        startX = e.pageX - this.track.offsetLeft
 
-        let txt = this.track.style.transform
-        let numb = txt.match(/\d/g)
-        
-        if (numb != null) 
-          numb = numb.join( "" );
-          startX = e.pageX - this.track.offsetLeft
-          slideX = numb
+        this.updateSlidex()
       })
 
       addEvent(this.track, 'mouseleave', ()=>{
         isDown = false
         removeClass( this.track, 'zero_active' )
 
-        if (this.slideIndex >= ( this.itemWidth * this.items.length  - window.innerWidth)) {
-          this.slideIndex = (this.itemWidth * this.items.length  - window.innerWidth )
-          this._trackStyleUpdate()
-        }
+        this._trackStyleUpdate( true )
       })
 
       addEvent(this.track, 'mouseup', ()=>{
         isDown = false
         removeClass( this.track, 'zero_active' )
-        
-        if (this.slideIndex >= ( this.itemWidth * this.items.length  - window.innerWidth)) {
-          this.slideIndex = (this.itemWidth * this.items.length  - window.innerWidth )
-          this._trackStyleUpdate()
-        }
-        
+        this._trackStyleUpdate( true )
       })
 
 
@@ -217,22 +217,23 @@ import {
         const x = e.pageX - this.track.offsetLeft
         const walk = x - startX
     
-        this.slideIndex = slideX - walk
-        
+        this.slideIndex = Math.round( this.slideX - walk )
         this.barIndex = this.slideIndex  / (((this.items.length * this.itemWidth) -  this.element.offsetWidth ) / this.element.offsetWidth)
 
-        this._trackStyleUpdate()
+        this._trackStyleUpdate( false )
         this._barStyleUpdate()
 
       })
     },
 
     slider: function () {
-      addEvent(this.bar , 'click',(e)=>{
+      addEvent( this.bar , 'click',( e )=>{
         this.barIndex = e.screenX
-        this.slideIndex = this.barIndex  * (((this.items.length * this.itemWidth) -  this.element.offsetWidth ) / this.element.offsetWidth)
+        this.slideIndex = Math.round(this.barIndex  * (((this.items.length * this.itemWidth) -  this.element.offsetWidth ) / this.element.offsetWidth))
+        
+        this.updateSlidex()
         this._barStyleUpdate()
-        this._trackStyleUpdate()
+        this._trackStyleUpdate( true )
       })
     },
 
