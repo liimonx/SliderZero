@@ -227,14 +227,16 @@ import {
     },
 
     slider: function () {
-      addEvent( this.bar , 'click',( e )=>{
-        this.barIndex = e.screenX
-        this.slideIndex = Math.round(this.barIndex  * (((this.items.length * this.itemWidth) -  this.element.offsetWidth ) / this.element.offsetWidth))
-        
-        this.updateSlidex()
-        this._barStyleUpdate()
-        this._trackStyleUpdate( true )
-      })
+      if (this.barClick == !0) {
+        addEvent( this.bar , 'click',( e )=>{
+          this.barIndex = e.screenX
+          this.slideIndex = Math.round(this.barIndex  * (((this.items.length * this.itemWidth) -  this.element.offsetWidth ) / this.element.offsetWidth))
+          
+          this.updateSlidex()
+          this._barStyleUpdate()
+          this._trackStyleUpdate( true )
+        })
+      }
     },
 
 
