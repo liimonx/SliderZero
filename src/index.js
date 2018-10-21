@@ -164,6 +164,11 @@ import {
     },
 
 
+    _trackStyleUpdate: function (params) {
+      this.track.style.transform = `translateX(-${this.slideIndex}px)`
+    },
+    
+
     _draging: function () {
       let isDown = false
       let startX
@@ -188,7 +193,7 @@ import {
 
         if (this.slideIndex >= ( this.itemWidth * this.items.length  - window.innerWidth)) {
           this.slideIndex = (this.itemWidth * this.items.length  - window.innerWidth )
-          this.track.style.transform = `translateX(-${this.slideIndex}px)`
+          this._trackStyleUpdate()
         }
       })
 
@@ -198,7 +203,7 @@ import {
         
         if (this.slideIndex >= ( this.itemWidth * this.items.length  - window.innerWidth)) {
           this.slideIndex = (this.itemWidth * this.items.length  - window.innerWidth )
-          this.track.style.transform = `translateX(-${this.slideIndex}px)`
+          this._trackStyleUpdate()
         }
         
       })
@@ -216,8 +221,7 @@ import {
         
         this.barIndex = this.slideIndex  / (((this.items.length * this.itemWidth) -  this.element.offsetWidth ) / this.element.offsetWidth)
 
-        this.track.style.transform = `translateX(-${this.slideIndex}px)`
-        
+        this._trackStyleUpdate()
         this._barStyleUpdate()
 
       })
@@ -226,7 +230,9 @@ import {
     slider: function () {
       addEvent(this.bar , 'click',(e)=>{
         this.barIndex = e.screenX
+        this.slideIndex = this.barIndex  * (((this.items.length * this.itemWidth) -  this.element.offsetWidth ) / this.element.offsetWidth)
         this._barStyleUpdate()
+        this._trackStyleUpdate()
       })
     },
 
