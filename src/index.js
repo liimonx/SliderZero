@@ -184,11 +184,11 @@ import {
 
 
     _draging: function () {
-      let isDown = false
+      let isDown = !1
       let startX
 
       addEvent(this.track, 'mousedown',(e)=>{
-        isDown = true
+        isDown = !0
         addClass( this.track, 'zero_active' )
         startX = e.pageX - this.track.offsetLeft
 
@@ -196,16 +196,16 @@ import {
       })
 
       addEvent(this.track, 'mouseleave', ()=>{
-        isDown = false
+        isDown = !1
         removeClass( this.track, 'zero_active' )
 
-        this._trackStyleUpdate( true )
+        this._trackStyleUpdate( !0 )
       })
 
       addEvent(this.track, 'mouseup', ()=>{
-        isDown = false
+        isDown = !1
         removeClass( this.track, 'zero_active' )
-        this._trackStyleUpdate( true )
+        this._trackStyleUpdate( !0 )
       })
 
 
@@ -220,22 +220,65 @@ import {
         this.slideIndex = Math.round( this.slideX - walk )
         this.barIndex = this.slideIndex  / (((this.items.length * this.itemWidth) -  this.element.offsetWidth ) / this.element.offsetWidth)
 
-        this._trackStyleUpdate( false )
+        this._trackStyleUpdate( !1 )
         this._barStyleUpdate()
 
       })
     },
 
+
+    autoplay: function (v) {
+      this.autoplayStart
+      let up = !0
+      let increment = Number(this.itemWidth)
+      const ceiling  = Number(this.itemWidth * this.items.length  - window.innerWidth)
+      if ( v == !0 ) {
+        this.autoplayStart = setInterval(() => {
+          
+          if ( up == !0 && this.slideIndex <= ceiling ) {
+            this.slideIndex += increment
+        
+            if ( this.slideIndex >= ceiling ) {
+              up = !1
+            }
+          } else {
+              up = !1
+              this.slideIndex -= increment;
+        
+              if ( this.slideIndex <= 0 ) {
+                up = !0
+                this.slideIndex = 0
+              }
+          }
+
+          this.barIndex = this.slideIndex  / (((this.items.length * this.itemWidth) -  this.element.offsetWidth ) / this.element.offsetWidth)
+          this._barStyleUpdate()
+          this._trackStyleUpdate( !1 )
+
+          
+      }, this.options.autoplaySpeed)
+      }else{
+        clearInterval(this.autoplayStart)
+      }
+    },
+
+
     slider: function () {
-      if (this.barClick == !0) {
+      if (this.options.barClick == !0) {
         addEvent( this.bar , 'click',( e )=>{
           this.barIndex = e.screenX
           this.slideIndex = Math.round(this.barIndex  * (((this.items.length * this.itemWidth) -  this.element.offsetWidth ) / this.element.offsetWidth))
           
           this.updateSlidex()
           this._barStyleUpdate()
-          this._trackStyleUpdate( true )
+          this._trackStyleUpdate( !0 )
         })
+      }
+
+      if (this.options.autoplay == !0) {
+        this.autoplay(!0)
+        addEvent(this.track, 'mouseenter', () => this.autoplay(!1))
+        addEvent(this.track, 'mouseleave', () => this.autoplay(!0))
       }
     },
 
