@@ -36,7 +36,7 @@ import {
   }
 
   SliderZero.defaults = {
-   
+    slidesToShow   : 3,
     autoplay       : true,
     autoplaySpeed  : 2000,
     controlBar     : true,
@@ -63,9 +63,7 @@ import {
         item = items[i];
         addClass(item, 'zero_item')
         this.items.push( item )
-
-        this.itemWidth = ( getStyle( item ).width )
-        .match(/\d/g).join('')
+       
         
         if (i == items.length - 1) 
           [...items].forEach( item => item.remove( item ) )
@@ -153,7 +151,9 @@ import {
       this.bar.appendChild(this.innerBar)
       if (this.options.controlBar == !0) this.element.appendChild(this.bar)
 
+      this.slidesToShow()
       this.renderStyle()
+
     },
 
 
@@ -171,7 +171,7 @@ import {
       
       if (numb != null) 
         numb = numb.join( "" );
-        this.slideX  = numb
+        this.slideX  = Number(numb)
     },
     
     
@@ -227,10 +227,30 @@ import {
     },
 
 
+    slidesToShow: function () {
+      let items = document.querySelectorAll(`.${this.element.classList[0]} .zero_track .zero_item`)
+
+      items.forEach(item => {
+        let numb = ( getStyle( item ).width ).match(/\d/g).join('')
+        let width = Number(numb)
+
+        let space = (this.element.offsetWidth 
+          - (width * this.options.slidesToShow)) 
+          / this.options.slidesToShow
+
+        css(item, {margin : `0 ${space / 2}px`})
+
+        this.itemWidth = Math.round( width  + space)
+
+      })
+      
+    },
+
+
     autoplay: function (v) {
       this.autoplayStart
       let up = !0
-      let increment = Number(this.itemWidth)
+      let increment = Number(this.itemWidth) * this.options.slidesToShow
       const ceiling  = Number(this.itemWidth * this.items.length  - window.innerWidth)
       if ( v == !0 ) {
         this.autoplayStart = setInterval(() => {
@@ -253,8 +273,7 @@ import {
 
           this.barIndex = this.slideIndex  / (((this.items.length * this.itemWidth) -  this.element.offsetWidth ) / this.element.offsetWidth)
           this._barStyleUpdate()
-          this._trackStyleUpdate( !1 )
-
+          this._trackStyleUpdate( !0 )
           
       }, this.options.autoplaySpeed)
       }else{
