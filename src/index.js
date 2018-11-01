@@ -5,7 +5,7 @@ import {
   hasClass,
   addClass,
   getStyle,
-  addEvent, 
+  addEvent,
   removeClass,
   removeEvent
 } from './components/domUtility'
@@ -16,71 +16,53 @@ import {
   'use strict'
 
 
-  function SliderZero(elm, options) {
-    this.element = $(elm)[0]
+  class SliderZero {
 
-    this.slideIndex = 0
-    this.barIndex = 0
+    constructor(elm, options) {
 
-    this.options = {}
+      this.element = $(elm)[0]
 
-    for (var prop in SliderZero.defaults) {
-      this.options[prop] = SliderZero.defaults[prop]
-    }
+      this.slideIndex = 0
+      this.barIndex = 0
 
-    for (prop in options) {
+      this.options = {}
+
+      for (var prop in SliderZero.defaults) {
+        this.options[prop] = SliderZero.defaults[prop]
+      }
+
+      for (prop in options) {
         this.options[prop] = options[prop]
+      }
+
+      this.init()
+
     }
 
-    this.init()
-  }
-
-  SliderZero.defaults = {
-    slidesToShow   : 3,
-    autoplay       : true,
-    autoplaySpeed  : 2000,
-    controlBar     : true,
-    barClick       : true,
-    barStyle       : {
-      borderRadius : 5,
-      background   : '#F7E29C',
-      barColor     : '#FCBC80',
-      height       : '10'
-    }, easing      : 'cubic-bezier(0.22, 0.77, 0.01, 0.8)',
-
-
-  }
-
-
-
-
-  SliderZero.prototype = {
-
-    _getItems: function ( items ) {
-      let item 
-      for ( let i = 0; i < items.length; i++ ) {
+    _getItems(items) {
+      let item
+      for (let i = 0; i < items.length; i++) {
 
         item = items[i];
         addClass(item, 'zero_item')
-        this.items.push( item )
-       
-        
-        if (i == items.length - 1) 
-          [...items].forEach( item => item.remove( item ) )
+        this.items.push(item)
+
+        if (i == items.length - 1)
+          [...items].forEach(item => item.remove(item))
 
       }
-    },
+    }
 
 
-    reloadItems: function () {
+    _reloadItems() {
       this.items = []
       this._getItems(this.element.children)
-    },
+    }
 
 
-    renderStyle: function(){
-      const head = $( 'head' )[0]
-      const style = C$('style' )
+    _renderStyle() {
+      const head = $('head')[0]
+      const style = C$('style')
 
       style.innerHTML = `
 
@@ -128,189 +110,226 @@ import {
 
       `
 
-      head.appendChild( style )
-      
-    },
+      head.appendChild(style)
+
+    }
 
 
-    _create: function () {
-      this.reloadItems()
+    _checkResponsive() {
+      if (this.options.responsive) {
 
-      this.track = C$( 'div' )
-      addClass( this.track, 'zero_track' )
+        this.options.responsive.forEach(responsiveOption => {
 
-      this.bar = C$( 'div' )
-      addClass( this.bar, 'zero_bar' )
+          let media = window.matchMedia(`(max-width: ${responsiveOption.breakpoint}px)`)
 
-      this.innerBar = C$( 'span' )
+          if (media.matches) this.options._slidesToShow = responsiveOption.settings._slidesToShow
+
+        })
+      }
+    }
+
+
+    _create() {
+      this._reloadItems()
+
+      this.track = C$('div')
+      addClass(this.track, 'zero_track')
+
+      this.bar = C$('div')
+      addClass(this.bar, 'zero_bar')
+
+      this.innerBar = C$('span')
       addClass(this.innerBar, 'zero_innerBar')
 
-      this.items.forEach( item => this.track.appendChild( item ) )
-      this.element.appendChild( this.track )
+      this.items.forEach(item => this.track.appendChild(item))
+      this.element.appendChild(this.track)
 
       this.bar.appendChild(this.innerBar)
       if (this.options.controlBar == !0) this.element.appendChild(this.bar)
 
-      this.slidesToShow()
-      this.renderStyle()
+      this._checkResponsive()
+      this._slidesToShow()
+      this._renderStyle()
 
-    },
-
-
-    _barStyleUpdate: function () {
-      css( this.innerBar , {
-        width: `${this.barIndex}px`
+      addEvent(window, 'resize', () => {
+        this._checkResponsive()
+        this._slidesToShow()
       })
-    },
+    }
 
-    
-    updateSlidex: function () {
-      this.slideX 
+
+    _barStyleUpdate() {
+      css(this.innerBar, {
+        width: `${(100 / this.element.offsetWidth) * this.barIndex}%`
+      })
+    }
+
+
+    _updateSlidex() {
+      this.slideX
       let txt = this.track.style.transform
       let numb = txt.match(/\d/g)
-      
-      if (numb != null) 
-        numb = numb.join( "" );
-        this.slideX  = Number(numb)
-    },
-    
-    
-    _trackStyleUpdate: function (changeIndex) {
-      if (changeIndex == !0 && this.slideIndex >= ( this.itemWidth * this.items.length  - window.innerWidth)) {
-        this.slideIndex = (this.itemWidth * this.items.length  - window.innerWidth )
-      }
+
+      if (numb != null)
+        numb = numb.join("");
+      this.slideX = Number(numb)
+    }
+
+
+    _trackStyleUpdate(changeIndex) {
+
+      if (changeIndex == !0 && this.slideIndex >= (this.itemWidth * this.items.length - window.innerWidth))
+        this.slideIndex = (this.itemWidth * this.items.length - window.innerWidth)
+
       this.track.style.transform = `translateX(-${this.slideIndex}px)`
-    },
+    }
 
 
-    _draging: function () {
+    _draging() {
       let isDown = !1
       let startX
 
-      addEvent(this.track, 'mousedown',(e)=>{
+      addEvent(this.track, 'mousedown', (e) => {
         isDown = !0
-        addClass( this.track, 'zero_active' )
+        addClass(this.track, 'zero_active')
         startX = e.pageX - this.track.offsetLeft
 
-        this.updateSlidex()
+        this._updateSlidex()
       })
 
-      addEvent(this.track, 'mouseleave', ()=>{
+      addEvent(this.track, 'mouseleave', () => {
         isDown = !1
-        removeClass( this.track, 'zero_active' )
+        removeClass(this.track, 'zero_active')
 
-        this._trackStyleUpdate( !0 )
+        this._trackStyleUpdate(!0)
       })
 
-      addEvent(this.track, 'mouseup', ()=>{
+      addEvent(this.track, 'mouseup', () => {
         isDown = !1
-        removeClass( this.track, 'zero_active' )
-        this._trackStyleUpdate( !0 )
+        removeClass(this.track, 'zero_active')
+
+        this._trackStyleUpdate(!0)
       })
 
 
-      this.track.addEventListener('mousemove',(e)=>{
-        if ( !isDown ) return
+      this.track.addEventListener('mousemove', (e) => {
+        if (!isDown) return
 
         e.preventDefault()
 
         const x = e.pageX - this.track.offsetLeft
         const walk = x - startX
-    
-        this.slideIndex = Math.round( this.slideX - walk )
-        this.barIndex = this.slideIndex  / (((this.items.length * this.itemWidth) -  this.element.offsetWidth ) / this.element.offsetWidth)
 
-        this._trackStyleUpdate( !1 )
+        this.slideIndex = Math.round(this.slideX - walk)
+        this.barIndex = this.slideIndex / (((this.items.length * this.itemWidth) - this.element.offsetWidth) / this.element.offsetWidth)
+
+        this._trackStyleUpdate(!1)
         this._barStyleUpdate()
 
       })
-    },
+    }
 
 
-    slidesToShow: function () {
+    _slidesToShow() {
       let items = document.querySelectorAll(`.${this.element.classList[0]} .zero_track .zero_item`)
 
       items.forEach(item => {
-        let numb = ( getStyle( item ).width ).match(/\d/g).join('')
+        let numb = (getStyle(item).width).match(/\d/g).join('')
         let width = Number(numb)
 
-        let space = (this.element.offsetWidth 
-          - (width * this.options.slidesToShow)) 
-          / this.options.slidesToShow
+        let space = (this.element.offsetWidth - (width * this.options._slidesToShow)) / this.options._slidesToShow
 
-        css(item, {margin : `0 ${space / 2}px`})
+        css(item, {
+          margin: `0 ${space / 2}px`
+        })
 
-        this.itemWidth = Math.round( width  + space)
+        this.itemWidth = Math.round(width + space)
 
       })
-      
-    },
+
+    }
 
 
-    autoplay: function (v) {
+    _autoplay(v) {
       this.autoplayStart
+
       let up = !0
-      let increment = Number(this.itemWidth) * this.options.slidesToShow
-      const ceiling  = Number(this.itemWidth * this.items.length  - window.innerWidth)
-      if ( v == !0 ) {
+      let increment = Number(this.itemWidth) * this.options._slidesToShow
+      const ceiling = Number(this.itemWidth * this.items.length - window.innerWidth)
+
+      if (v == !0) {
         this.autoplayStart = setInterval(() => {
-          
-          if ( up == !0 && this.slideIndex <= ceiling ) {
+
+          if (up == !0 && this.slideIndex <= ceiling) {
             this.slideIndex += increment
-        
-            if ( this.slideIndex >= ceiling ) {
+
+            if (this.slideIndex >= ceiling) {
               up = !1
             }
           } else {
-              up = !1
-              this.slideIndex -= increment;
-        
-              if ( this.slideIndex <= 0 ) {
-                up = !0
-                this.slideIndex = 0
-              }
+            up = !1
+            this.slideIndex -= increment;
+
+            if (this.slideIndex <= 0) {
+              up = !0
+              this.slideIndex = 0
+            }
           }
 
-          this.barIndex = this.slideIndex  / (((this.items.length * this.itemWidth) -  this.element.offsetWidth ) / this.element.offsetWidth)
+          this.barIndex = this.slideIndex / (((this.items.length * this.itemWidth) - this.element.offsetWidth) / this.element.offsetWidth)
           this._barStyleUpdate()
-          this._trackStyleUpdate( !0 )
-          
-      }, this.options.autoplaySpeed)
-      }else{
+          this._trackStyleUpdate(!0)
+
+        }, this.options.autoplaySpeed)
+
+      } else {
         clearInterval(this.autoplayStart)
       }
-    },
+    }
 
 
-    slider: function () {
+    _slider() {
       if (this.options.barClick == !0) {
-        addEvent( this.bar , 'click',( e )=>{
+        addEvent(this.bar, 'click', (e) => {
           this.barIndex = e.screenX
-          this.slideIndex = Math.round(this.barIndex  * (((this.items.length * this.itemWidth) -  this.element.offsetWidth ) / this.element.offsetWidth))
-          
-          this.updateSlidex()
+          this.slideIndex = Math.round(this.barIndex * (((this.items.length * this.itemWidth) - this.element.offsetWidth) / this.element.offsetWidth))
+
+          this._updateSlidex()
           this._barStyleUpdate()
-          this._trackStyleUpdate( !0 )
+          this._trackStyleUpdate(!0)
         })
       }
 
       if (this.options.autoplay == !0) {
-        this.autoplay(!0)
-        addEvent(this.track, 'mouseenter', () => this.autoplay(!1))
-        addEvent(this.track, 'mouseleave', () => this.autoplay(!0))
+        this._autoplay(!0)
+
+        addEvent(this.track, 'mouseenter', () => this._autoplay(!1))
+        addEvent(this.track, 'mouseleave', () => this._autoplay(!0))
       }
-    },
+    }
 
-
-    init: function() {
+    init() {
       this._create()
       this._draging()
-      this.slider()
+      this._slider()
     }
 
   }
 
-
+  SliderZero.defaults = {
+    _slidesToShow: 3,
+    autoplay: true,
+    autoplaySpeed: 2000,
+    controlBar: true,
+    barClick: true,
+    barStyle: {
+      borderRadius: 5,
+      background: '#F7E29C',
+      barColor: '#FCBC80',
+      height: '10'
+    },
+    easing: 'cubic-bezier(0.22, 0.77, 0.01, 0.8)',
+  }
 
 
   window.SliderZero = SliderZero
