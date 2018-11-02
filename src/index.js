@@ -122,7 +122,7 @@ import {
 
           let media = window.matchMedia(`(max-width: ${responsiveOption.breakpoint}px)`)
 
-          if (media.matches) this.options._slidesToShow = responsiveOption.settings._slidesToShow
+          if (media.matches) this.options.slidesToShow = responsiveOption.settings.slidesToShow
 
         })
       }
@@ -154,6 +154,8 @@ import {
       addEvent(window, 'resize', () => {
         this._checkResponsive()
         this._slidesToShow()
+        this._trackStyleUpdate(!0)
+
       })
     }
 
@@ -177,7 +179,6 @@ import {
 
 
     _trackStyleUpdate(changeIndex) {
-
       if (changeIndex == !0 && this.slideIndex >= (this.itemWidth * this.items.length - window.innerWidth))
         this.slideIndex = (this.itemWidth * this.items.length - window.innerWidth)
 
@@ -237,7 +238,7 @@ import {
         let numb = (getStyle(item).width).match(/\d/g).join('')
         let width = Number(numb)
 
-        let space = (this.element.offsetWidth - (width * this.options._slidesToShow)) / this.options._slidesToShow
+        let space = (this.element.offsetWidth - (width * this.options.slidesToShow)) / this.options.slidesToShow
 
         css(item, {
           margin: `0 ${space / 2}px`
@@ -250,11 +251,11 @@ import {
     }
 
 
-    _autoplay(v) {
+    autoplay(v) {
       this.autoplayStart
 
       let up = !0
-      let increment = Number(this.itemWidth) * this.options._slidesToShow
+      let increment = Number(this.itemWidth) * this.options.slidesToShow
       const ceiling = Number(this.itemWidth * this.items.length - window.innerWidth)
 
       if (v == !0) {
@@ -288,10 +289,10 @@ import {
     }
 
 
-    _slider() {
+    slider() {
       if (this.options.barClick == !0) {
         addEvent(this.bar, 'click', (e) => {
-          this.barIndex = e.screenX
+          this.barIndex = e.clientX
           this.slideIndex = Math.round(this.barIndex * (((this.items.length * this.itemWidth) - this.element.offsetWidth) / this.element.offsetWidth))
 
           this._updateSlidex()
@@ -301,23 +302,23 @@ import {
       }
 
       if (this.options.autoplay == !0) {
-        this._autoplay(!0)
+        this.autoplay(!0)
 
-        addEvent(this.track, 'mouseenter', () => this._autoplay(!1))
-        addEvent(this.track, 'mouseleave', () => this._autoplay(!0))
+        addEvent(this.track, 'mouseenter', () => this.autoplay(!1))
+        addEvent(this.track, 'mouseleave', () => this.autoplay(!0))
       }
     }
 
     init() {
       this._create()
       this._draging()
-      this._slider()
+      this.slider()
     }
 
   }
 
   SliderZero.defaults = {
-    _slidesToShow: 3,
+    slidesToShow: 3,
     autoplay: true,
     autoplaySpeed: 2000,
     controlBar: true,
